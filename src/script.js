@@ -36,22 +36,11 @@ gltfLoader.setDRACOLoader(dracoLoader)
 
 let mixer = null
 
-/**
- * Object
- */
-/*
-const cube = new THREE.Mesh(
-    new THREE.BoxGeometry(1, 1, 1),
-    new THREE.MeshBasicMaterial()
-)
-
-scene.add(cube)
 
 
 /**
  * Textures
  */
- //const bakedTexture = textureLoader.load('sol_bake.png')
 
 
  let stacy_txt = new THREE.TextureLoader().load('texture_total.png');
@@ -66,13 +55,6 @@ scene.add(cube)
 
 
 
-/**
- * Materials
- */
-// Baked material
-const bakedMaterial = new THREE.MeshBasicMaterial ({color: 0xff0000 })
-//const bakedMaterial = new THREE.MeshBasicMaterial({ map: bakedTexture })
-
 
 /**
  * Model
@@ -81,12 +63,10 @@ gltfLoader.load(
     'models/Duck/glTF-Binary/perso_v7.glb',
     (gltf) =>
     {
-        console.log(gltf)
-        
-
+ 
         gltf.scene.scale.set(0.1,0.1,0.1)
         
-        //gltf.scene.position.y = 0.5
+        gltf.scene.position.y = 0.2
         
         gltf.scene.traverse((child) => {
             
@@ -99,8 +79,7 @@ gltfLoader.load(
             }
         });
         
-        
-            
+              
          // Animation
          mixer = new THREE.AnimationMixer(gltf.scene)
          const action = mixer.clipAction(gltf.animations[0])
@@ -111,38 +90,6 @@ gltfLoader.load(
 )
 
 
-/*
-
-const gltfLoader = new GLTFLoader()
-
-
-let mixer = null
-
-gltfLoader.load(
-    '/models/Duck/glTF-Binary/Duck.glb',
-    (gltf) =>
-    {
-        gltf.scene.scale.set(0.1, 0.1, 0.1)
-        scene.add(gltf.scene)
-
-        gltf.scene.traverse((o) => {
-
-            child.material = bakedMaterial
-
-            if (o.isMesh) {
-                o.castShadow = true;
-                o.receiveShadow = true;
-            }
-        });
-              
-        // Animation
-        mixer = new THREE.AnimationMixer(gltf.scene)
-        const action = mixer.clipAction(gltf.animations[0])
-        action.play()
-    }
-)
-
-*/
 
 
 /**
@@ -157,6 +104,7 @@ gltfLoader.load(
         
         var floor = new THREE.Mesh(floorGeometry, floorMaterial);
         floor.rotation.x = -0.5 * Math.PI;
+        floor.position.y = 0.2;
         floor.receiveShadow = true;
         scene.add(floor);
 
@@ -172,7 +120,7 @@ scene.add(hemiLight);
 
 let d = 8.25;
 let dirLight = new THREE.DirectionalLight(0xffffff, 0.54);
-dirLight.position.set(-8, 12, 8);
+dirLight.position.set(-8, 25, 8);
 dirLight.castShadow = true;
 dirLight.shadow.mapSize = new THREE.Vector2(1024, 1024);
 dirLight.shadow.camera.near = 0.1;
@@ -181,6 +129,7 @@ dirLight.shadow.camera.left = d * -1;
 dirLight.shadow.camera.right = d;
 dirLight.shadow.camera.top = d;
 dirLight.shadow.camera.bottom = d * -1;
+dirLight.shadow.normalBias = 0.05;
 // Add directional Light to scene
 scene.add(dirLight);
 
@@ -233,6 +182,7 @@ controls.maxPolarAngle = Math.PI / 2;
  */
 const renderer = new THREE.WebGLRenderer({
     canvas: canvas
+      
 })
 
 renderer.antialias = true
