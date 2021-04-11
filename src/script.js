@@ -184,7 +184,7 @@ let d = 8.25;
 let dirLight = new THREE.DirectionalLight(0xffffff, 0.54);
 dirLight.position.set(-8, 12, 8);
 dirLight.castShadow = true;
-dirLight.shadow.mapSize = new THREE.Vector2(1024, 1024);
+dirLight.shadow.mapSize = new THREE.Vector2(2048, 2048);
 dirLight.shadow.camera.near = 0.1;
 dirLight.shadow.camera.far = 1500;
 dirLight.shadow.camera.left = d * -1;
@@ -224,15 +224,15 @@ window.addEventListener('resize', () =>
  * Camera
  */
 // Base camera
-const camera = new THREE.PerspectiveCamera(45, sizes.width / sizes.height, 1, 100)
-camera.position.set( - 1, 2, 3 );
+const camera = new THREE.PerspectiveCamera(45, sizes.width / sizes.height, 1, 75)
+camera.position.set( - 1, 1, 3 );
 scene.add(camera)
 
 // Controls
 const controls = new OrbitControls(camera, canvas)
 
 controls.enablePan = false;
-//controls.enableZoom = false;
+controls.enableZoom = false;
 controls.target.set( 0, 1, 0 );
 controls.enableDamping = true
 controls.dampingFactor = 0.05;
@@ -244,6 +244,8 @@ controls.maxPolarAngle = Math.PI / 2;
 const renderer = new THREE.WebGLRenderer({
     canvas: canvas
 })
+
+renderer.antialias = true
 renderer.shadowMap.enabled = true
 renderer.shadowMap.type = THREE.PCFSoftShadowMap
 renderer.setSize(sizes.width, sizes.height)
