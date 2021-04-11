@@ -44,10 +44,12 @@ dracoLoader.setDecoderPath('draco/')
 const gltfLoader = new GLTFLoader()
 gltfLoader.setDRACOLoader(dracoLoader)
 
+let mixer = null
+
 /**
  * Object
  */
-
+/*
 const cube = new THREE.Mesh(
     new THREE.BoxGeometry(1, 1, 1),
     new THREE.MeshBasicMaterial()
@@ -59,7 +61,20 @@ scene.add(cube)
 /**
  * Textures
  */
- const bakedTexture = textureLoader.load('sol_bake.png')
+ //const bakedTexture = textureLoader.load('sol_bake.png')
+
+
+ let stacy_txt = new THREE.TextureLoader().load('texture_total.png');
+
+ stacy_txt.flipY = false; // we flip the texture so that its the right way up
+ 
+ const stacy_mtl = new THREE.MeshPhongMaterial({
+   map: stacy_txt,
+   color: 0xffffff,
+   skinning: true
+ });
+
+
 
 /**
  * Materials
@@ -68,39 +83,45 @@ scene.add(cube)
 const bakedMaterial = new THREE.MeshBasicMaterial ({color: 0xff0000 })
 //const bakedMaterial = new THREE.MeshBasicMaterial({ map: bakedTexture })
 
+
 /**
  * Model
  */
 gltfLoader.load(
-    '/models/Duck/glTF-Binary/perso_v1.glb',
+    'models/Duck/glTF-Binary/perso_v7.glb',
     (gltf) =>
     {
         console.log(gltf)
         
 
-        gltf.scene.scale.set(0.1, 0.1, 0.1)
-
-
+        gltf.scene.scale.set(0.1,0.1,0.1)
+        
+        //gltf.scene.position.y = 0.5
+        
         gltf.scene.traverse((child) => {
-            child.material = bakedMaterial
-
-            if (child.isMesh) {
-                child.castShadow = true;
-                child.receiveShadow = true;
-            }
-        });
             
 
-
-
-
+            if (child.isMesh) {
+                // child.material = bakedMaterial
+                child.castShadow = true;
+                child.receiveShadow = true;
+                child.material = stacy_mtl; // Add this line
+            }
+        });
+        
+        
+            
+         // Animation
+         mixer = new THREE.AnimationMixer(gltf.scene)
+         const action = mixer.clipAction(gltf.animations[0])
+         action.play()
+         
         scene.add(gltf.scene)
     }
 )
 
 
 /*
-
 
 const gltfLoader = new GLTFLoader()
 
@@ -133,13 +154,14 @@ gltfLoader.load(
 
 */
 
+
 /**
  * Floor
  */
-/*
+
  var floorGeometry = new THREE.PlaneGeometry(5000, 5000);
         var floorMaterial = new THREE.MeshPhongMaterial({
-            color: 0xE5E5E5,
+            color: 0xffffff,
             shininess: 0
         });
         
@@ -148,7 +170,32 @@ gltfLoader.load(
         floor.receiveShadow = true;
         scene.add(floor);
 
-*/
+
+
+
+
+// Add lights
+let hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.61);
+hemiLight.position.set(0, 50, 0);
+// Add hemisphere light to scene
+scene.add(hemiLight);
+
+let d = 8.25;
+let dirLight = new THREE.DirectionalLight(0xffffff, 0.54);
+dirLight.position.set(-8, 12, 8);
+dirLight.castShadow = true;
+dirLight.shadow.mapSize = new THREE.Vector2(1024, 1024);
+dirLight.shadow.camera.near = 0.1;
+dirLight.shadow.camera.far = 1500;
+dirLight.shadow.camera.left = d * -1;
+dirLight.shadow.camera.right = d;
+dirLight.shadow.camera.top = d;
+dirLight.shadow.camera.bottom = d * -1;
+// Add directional Light to scene
+scene.add(dirLight);
+
+
+
 
 /**
  * Sizes
@@ -215,10 +262,10 @@ const tick = () =>
     previousTime = elapsedTime
 
     // Model animation
-    /*if(mixer)
+    if(mixer)
     {
         mixer.update(deltaTime)
-    }*/
+    }
 
     // Update controls
     controls.update()
