@@ -1,19 +1,9 @@
 import './style.css'
 import * as THREE from 'three'
-import * as dat from 'dat.gui'
+
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
-
-/**
- * Base
- */
-// Debug
-const gui = new dat.GUI({
-    width: 400
-})
-
-// 
 
 
 // Canvas
@@ -184,7 +174,7 @@ let d = 8.25;
 let dirLight = new THREE.DirectionalLight(0xffffff, 0.54);
 dirLight.position.set(-8, 12, 8);
 dirLight.castShadow = true;
-dirLight.shadow.mapSize = new THREE.Vector2(2048, 2048);
+dirLight.shadow.mapSize = new THREE.Vector2(1024, 1024);
 dirLight.shadow.camera.near = 0.1;
 dirLight.shadow.camera.far = 1500;
 dirLight.shadow.camera.left = d * -1;
