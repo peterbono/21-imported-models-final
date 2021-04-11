@@ -1,9 +1,19 @@
 import './style.css'
 import * as THREE from 'three'
+import * as dat from 'dat.gui'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
 
+/**
+ * Base
+ */
+// Debug
+const gui = new dat.GUI({
+    width: 400
+})
+
+// 
 
 
 // Canvas
@@ -17,27 +27,97 @@ const scene = new THREE.Scene()
 // Set background
 scene.background = new THREE.Color(BACKGROUND_COLOR );
 
+
+
+
 /**
- * Models
+ * Loaders
+ */
+// Texture loader
+const textureLoader = new THREE.TextureLoader()
+
+// Draco loader
+const dracoLoader = new DRACOLoader()
+dracoLoader.setDecoderPath('draco/')
+
+// GLTF loader
+const gltfLoader = new GLTFLoader()
+gltfLoader.setDRACOLoader(dracoLoader)
+
+/**
+ * Object
  */
 
-/*const dracoLoader = new DRACOLoader()
-dracoLoader.setDecoderPath('/draco/')*/
+const cube = new THREE.Mesh(
+    new THREE.BoxGeometry(1, 1, 1),
+    new THREE.MeshBasicMaterial()
+)
+
+scene.add(cube)
+
+
+/**
+ * Textures
+ */
+ const bakedTexture = textureLoader.load('sol_bake.png')
+
+/**
+ * Materials
+ */
+// Baked material
+const bakedMaterial = new THREE.MeshBasicMaterial ({color: 0xff0000 })
+//const bakedMaterial = new THREE.MeshBasicMaterial({ map: bakedTexture })
+
+/**
+ * Model
+ */
+gltfLoader.load(
+    '/models/Duck/glTF-Binary/perso_v1.glb',
+    (gltf) =>
+    {
+        console.log(gltf)
+        
+
+        gltf.scene.scale.set(0.1, 0.1, 0.1)
+
+
+        gltf.scene.traverse((child) => {
+            child.material = bakedMaterial
+
+            if (child.isMesh) {
+                child.castShadow = true;
+                child.receiveShadow = true;
+            }
+        });
+            
+
+
+
+
+        scene.add(gltf.scene)
+    }
+)
+
+
+/*
+
 
 const gltfLoader = new GLTFLoader()
-/*gltfLoader.setDRACOLoader(dracoLoader)*/
 
 
 let mixer = null
 
 gltfLoader.load(
-    '/models/Duck/glTF-Binary/chubalibre.glb',
+    '/models/Duck/glTF-Binary/Duck.glb',
     (gltf) =>
     {
-        gltf.scene.scale.set(1.8, 1.8, 1.8)
+        gltf.scene.scale.set(0.1, 0.1, 0.1)
         scene.add(gltf.scene)
 
         gltf.scene.traverse((o) => {
+
+            child.material = bakedMaterial
+
             if (o.isMesh) {
                 o.castShadow = true;
                 o.receiveShadow = true;
@@ -51,39 +131,24 @@ gltfLoader.load(
     }
 )
 
-
+*/
 
 /**
  * Floor
  */
-const floor = new THREE.Mesh(
-    new THREE.PlaneGeometry(10, 10),
-    new THREE.MeshStandardMaterial({
-        color: '#FFFFFF',
-        metalness: 0,
-        roughness: 0.5
-    })
-)
-floor.receiveShadow = true
-floor.rotation.x = - Math.PI * 0.5
-scene.add(floor)
+/*
+ var floorGeometry = new THREE.PlaneGeometry(5000, 5000);
+        var floorMaterial = new THREE.MeshPhongMaterial({
+            color: 0xE5E5E5,
+            shininess: 0
+        });
+        
+        var floor = new THREE.Mesh(floorGeometry, floorMaterial);
+        floor.rotation.x = -0.5 * Math.PI;
+        floor.receiveShadow = true;
+        scene.add(floor);
 
-/**
- * Lights
- */
-const ambientLight = new THREE.AmbientLight(0xffffff, 2)
-scene.add(ambientLight)
-
-const directionalLight = new THREE.DirectionalLight(0xffffff, 2)
-directionalLight.castShadow = true
-directionalLight.shadow.mapSize.set(1024, 1024)
-directionalLight.shadow.camera.far = 15
-directionalLight.shadow.camera.left = - 7
-directionalLight.shadow.camera.top = 7
-directionalLight.shadow.camera.right = 7
-directionalLight.shadow.camera.bottom = - 7
-directionalLight.position.set(- 5, 5, 0)
-scene.add(directionalLight)
+*/
 
 /**
  * Sizes
@@ -112,14 +177,19 @@ window.addEventListener('resize', () =>
  * Camera
  */
 // Base camera
-const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100)
-camera.position.set(2, 3, 3)
+const camera = new THREE.PerspectiveCamera(45, sizes.width / sizes.height, 1, 100)
+camera.position.set( - 1, 2, 3 );
 scene.add(camera)
 
 // Controls
 const controls = new OrbitControls(camera, canvas)
-controls.target.set(0, 0.75, 0)
+
+controls.enablePan = false;
+//controls.enableZoom = false;
+controls.target.set( 0, 1, 0 );
 controls.enableDamping = true
+controls.dampingFactor = 0.05;
+controls.maxPolarAngle = Math.PI / 2;
 
 /**
  * Renderer
@@ -145,10 +215,10 @@ const tick = () =>
     previousTime = elapsedTime
 
     // Model animation
-    if(mixer)
+    /*if(mixer)
     {
         mixer.update(deltaTime)
-    }
+    }*/
 
     // Update controls
     controls.update()
