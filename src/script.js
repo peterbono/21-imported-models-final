@@ -84,7 +84,7 @@ gltfLoader.load(
         gltf.scene.scale.set(1,1,1)
         //gltf.scene.scale.set(7,7,7)
 
-        gltf.scene.position.y = -14
+        gltf.scene.position.y = -11
         
         gltf.scene.traverse((o) => {
 
@@ -151,7 +151,7 @@ gltfLoader.load(
         
         var floor = new THREE.Mesh(floorGeometry, floorMaterial);
         floor.rotation.x = -0.5 * Math.PI;
-        floor.position.y = -14;
+        floor.position.y = -11;
         floor.receiveShadow = true;
         scene.add(floor);
 
