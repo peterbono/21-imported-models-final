@@ -2,10 +2,18 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>21 - Imported models</title>
 </head>
 <body>
+    <!-- The loading element overlays all else until the model is loaded, at which point we remove this element from the DOM -->  
+<div class="loading" id="js-loader"><div class="loader"></div></div>
+
+<div class="wrapper">
+    <!-- The canvas element is used to draw the 3D scene -->
     <canvas class="webgl"></canvas>
+</div>
+
 </body>
 </html>

@@ -1,9 +1,38 @@
 import './style.css'
 import * as THREE from 'three'
 
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
+//import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
+
+  // Set our main variables
+  let model,                              // Our character
+    neck,                               // Reference to the neck bone in the skeleton
+    waist,                               // Reference to the waist bone in the skeleton
+    possibleAnims,                      // Animations found in our file                          // THREE.js animations mixer
+    idle,                               // Idle, the default state our character returns to        // Used for anims, which run to a clock instead of frame rate 
+    currentlyAnimating = false,         // Used to check whether characters neck is being used in another anim
+    raycaster = new THREE.Raycaster();  // Used to detect the click on our character
+
+/**
+ * Loaders
+ */
+
+// Anim loader
+var loaderAnim = document.getElementById('js-loader');
+
+// Texture loader
+const textureLoader = new THREE.TextureLoader()
+
+// Draco loader
+const dracoLoader = new DRACOLoader()
+dracoLoader.setDecoderPath('draco/')
+
+// GLTF loader
+const gltfLoader = new GLTFLoader()
+gltfLoader.setDRACOLoader(dracoLoader)
+
+let mixer = null
 
 
 // Canvas
@@ -19,22 +48,6 @@ scene.background = new THREE.Color(BACKGROUND_COLOR );
 
 
 
-
-/**
- * Loaders
- */
-// Texture loader
-const textureLoader = new THREE.TextureLoader()
-
-// Draco loader
-const dracoLoader = new DRACOLoader()
-dracoLoader.setDecoderPath('draco/')
-
-// GLTF loader
-const gltfLoader = new GLTFLoader()
-gltfLoader.setDRACOLoader(dracoLoader)
-
-let mixer = null
 
 
 
@@ -60,34 +73,68 @@ let mixer = null
  * Model
  */
 gltfLoader.load(
-    'models/Duck/glTF-Binary/perso_v7.glb',
+    'models/Duck/glTF-Binary/perso_v8.glb',
     (gltf) =>
     {
- 
-        gltf.scene.scale.set(0.1,0.1,0.1)
-        
-        gltf.scene.position.y = 0.2
-        
-        gltf.scene.traverse((child) => {
-            
 
-            if (child.isMesh) {
-                // child.material = bakedMaterial
-                child.castShadow = true;
-                child.receiveShadow = true;
-                child.material = stacy_mtl; // Add this line
+       
+        let fileAnimations = gltf.animations;
+
+ 
+        gltf.scene.scale.set(1,1,1)
+        //gltf.scene.scale.set(7,7,7)
+
+        gltf.scene.position.y = -14
+        
+        gltf.scene.traverse((o) => {
+
+          if (o.isBone) {
+            console.log(o.name);
+          }
+            if (o.isMesh) {
+                // o.material = bakedMaterial
+                o.castShadow = true;
+                o.receiveShadow = true;
+                o.material = stacy_mtl;    
             }
+
+              // Reference the neck and waist bones
+             if (o.isBone && o.name === 'mixamorigNeck') { 
+             neck = o;
+                }
+            // if (o.isBone && o.name === 'mixamorigSpine2') { 
+            //  waist = o;
+            // }
+
         });
         
               
          // Animation
          mixer = new THREE.AnimationMixer(gltf.scene)
+         let idleAnim = THREE.AnimationClip.findByName(fileAnimations, 'idle_flo');
+
+        // Add these:
+        idleAnim.tracks.splice(3, 3);
+        idleAnim.tracks.splice(9, 3);
+
+        let idle = mixer.clipAction(idleAnim);
+        idle.play();
+
+        undefined, // We don't need this function
+      function(error) {
+        console.error(error);
+      }
+
+        /** 
          const action = mixer.clipAction(gltf.animations[0])
          action.play()
+        */
          
         scene.add(gltf.scene)
+        loaderAnim.remove();
     }
 )
+
 
 
 
@@ -104,7 +151,7 @@ gltfLoader.load(
         
         var floor = new THREE.Mesh(floorGeometry, floorMaterial);
         floor.rotation.x = -0.5 * Math.PI;
-        floor.position.y = 0.2;
+        floor.position.y = -14;
         floor.receiveShadow = true;
         scene.add(floor);
 
@@ -163,19 +210,23 @@ window.addEventListener('resize', () =>
  * Camera
  */
 // Base camera
-const camera = new THREE.PerspectiveCamera(45, sizes.width / sizes.height, 1, 75)
-camera.position.set( - 1, 1, 3 );
-scene.add(camera)
+const camera = new THREE.PerspectiveCamera(50, sizes.width / sizes.height, 0.1, 1000);
+camera.position.set( 0, -3, 30 );
+scene.add(camera);
 
 // Controls
-const controls = new OrbitControls(camera, canvas)
+// const controls = new OrbitControls(camera, canvas)
 
-controls.enablePan = false;
-controls.enableZoom = false;
-controls.target.set( 0, 1, 0 );
-controls.enableDamping = true
-controls.dampingFactor = 0.05;
-controls.maxPolarAngle = Math.PI / 2;
+// controls.enablePan = false;
+// controls.enableZoom = false;
+// controls.target.set( 0, 1, 0 );
+// controls.enableDamping = true;
+// controls.dampingFactor = 0.05;
+// controls.maxPolarAngle = Math.PI / 2;
+
+
+
+
 
 /**
  * Renderer
@@ -210,7 +261,7 @@ const tick = () =>
     }
 
     // Update controls
-    controls.update()
+    //controls.update()
 
     // Render
     renderer.render(scene, camera)
@@ -220,3 +271,75 @@ const tick = () =>
 }
 
 tick()
+
+//Event
+
+
+document.addEventListener('mousemove', function(e) {
+
+    var mousecoords = getMousePos(e);
+
+      if (neck) {
+
+        moveJoint(mousecoords, neck, 50);
+        
+      }
+
+  });
+
+
+  
+  function getMousePos(e) {
+    return { x: e.clientX, y: e.clientY };
+  }
+  
+
+    function moveJoint(mouse, joint, degreeLimit) {
+      let degrees = getMouseDegrees(mouse.x, mouse.y, degreeLimit);
+      joint.rotation.x = THREE.Math.degToRad(degrees.y);
+      joint.rotation.y = THREE.Math.degToRad(degrees.x);
+      // console.log(joint.rotation.x);
+    }
+  
+    function getMouseDegrees(x, y, degreeLimit) {
+      let dx = 0,
+          dy = 0,
+          xdiff,
+          xPercentage,
+          ydiff,
+          yPercentage;
+    
+      let w = { x: window.innerWidth, y: window.innerHeight };
+    
+      // Left (Rotates neck left between 0 and -degreeLimit)
+      
+       // 1. If cursor is in the left half of screen
+      if (x <= w.x / 2) {
+        // 2. Get the difference between middle of screen and cursor position
+        xdiff = w.x / 2 - x;  
+        // 3. Find the percentage of that difference (percentage toward edge of screen)
+        xPercentage = (xdiff / (w.x / 2)) * 100;
+        // 4. Convert that to a percentage of the maximum rotation we allow for the neck
+        dx = ((degreeLimit * xPercentage) / 100) * -1; }
+    // Right (Rotates neck right between 0 and degreeLimit)
+      if (x >= w.x / 2) {
+        xdiff = x - w.x / 2;
+        xPercentage = (xdiff / (w.x / 2)) * 100;
+        dx = (degreeLimit * xPercentage) / 100;
+      }
+      // Up (Rotates neck up between 0 and -degreeLimit)
+      if (y <= w.y / 2) {
+        ydiff = w.y / 2 - y;
+        yPercentage = (ydiff / (w.y / 2)) * 100;
+        // Note that I cut degreeLimit in half when she looks up
+        dy = (((degreeLimit * 0.5) * yPercentage) / 100) * -1;
+        }
+      
+      // Down (Rotates neck down between 0 and degreeLimit)
+      if (y >= w.y / 2) {
+        ydiff = y - w.y / 2;
+        yPercentage = (ydiff / (w.y / 2)) * 100;
+        dy = (degreeLimit * yPercentage) / 100;
+      }
+      return { x: dx, y: dy };
+    }
